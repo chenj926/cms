@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
+import javax.validation.constraints.NegativeOrZero;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +33,15 @@ public class Course {
     @Nullable
     private List<CourseMark> marks = new ArrayList<>();
 
-    public Course(String code, String name, Professor professor){
+    @ManyToOne
+    @JoinColumn(name="classroomCode")
+    private Classroom classroom;
+
+    public Course(String code, String name, Professor professor, Classroom classroom){
         this.code = code;
         this.name = name;
         this.professor = professor;
+        this.classroom = classroom;
     }
 
 }

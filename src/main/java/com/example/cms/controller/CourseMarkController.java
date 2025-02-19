@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 public class CourseMarkController {
     @Autowired
+    //  try to inject the repository twice, leading to unexpected behavior
     private final CourseMarkRepository repository;
 
     public CourseMarkController(CourseMarkRepository repository) {
@@ -22,4 +23,10 @@ public class CourseMarkController {
         return repository.findAll();
     }
 
+    @PostMapping("/marks/increaseFive/{code}")
+    List<CourseMark> increaseFive(@PathVariable("code") String code) {
+        repository.increaseFive(code);
+
+        return repository.findAll();
+    }
 }

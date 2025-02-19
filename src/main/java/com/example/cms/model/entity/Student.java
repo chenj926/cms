@@ -25,4 +25,9 @@ public class Student extends Person {
     @Nullable
     private List<CourseMark> marks  = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name="departmentCode")
+    @Nullable
+    private Department department;
+
 }

@@ -1,7 +1,11 @@
 package com.example.cms.controller;
 
+import com.example.cms.controller.dto.StudentDto;
+import com.example.cms.controller.exceptions.DepartmentNotFoundException;
 import com.example.cms.controller.exceptions.StudentNotFoundException;
+import com.example.cms.model.entity.Department;
 import com.example.cms.model.entity.Student;
+import com.example.cms.model.repository.DepartmentRepository;
 import com.example.cms.model.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,9 @@ public class StudentController {
     @Autowired
     private final StudentRepository repository;
 
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
     public StudentController(StudentRepository repository) {
         this.repository = repository;
     }
@@ -24,7 +31,17 @@ public class StudentController {
     }
 
     @PostMapping("/students")
-    Student createStudent(@RequestBody Student newStudent) {
+    Student createStudent(@RequestBody StudentDto studentDto) {
+        Student newStudent = new Student();
+        newStudent.setId(studentDto.getId());
+        newStudent.setFirstName(studentDto.getFirstName());
+        newStudent.setLastName(studentDto.getLastName());
+        newStudent.setEmail(studentDto.getEmail());
+
+        Department department = departmentRepository.findById(studentDto.getDepartmentCode()).orElseThrow(
+                () -> new DepartmentNotFoundException(studentDto.getDepartmentCode())
+        );
+        newStudent.setDepartment(department);
         return repository.save(newStudent);
     }
 
@@ -35,16 +52,29 @@ public class StudentController {
     }
 
     @PutMapping("/students/{id}")
-    Student updateStudent(@RequestBody Student newStudent, @PathVariable("id") Long studentId) {
+    Student updateStudent(@RequestBody StudentDto studentDto, @PathVariable("id") Long studentId) {
         return repository.findById(studentId)
                 .map(student -> {
-                    student.setFirstName(newStudent.getFirstName());
-                    student.setLastName(newStudent.getLastName());
-                    student.setEmail(newStudent.getEmail());
+                    student.setFirstName(studentDto.getFirstName());
+                    student.setLastName(studentDto.getLastName());
+                    student.setEmail(studentDto.getEmail());
+                    Department department = departmentRepository.findById(studentDto.getDepartmentCode()).orElseThrow(
+                            () -> new DepartmentNotFoundException(studentDto.getDepartmentCode())
+                    );
+                    student.setDepartment(department);
                     return repository.save(student);
                 })
                 .orElseGet(() -> {
+                    Student newStudent = new Student(); // set new student
                     newStudent.setId(studentId);
+                    newStudent.setFirstName(studentDto.getFirstName());
+                    newStudent.setLastName(studentDto.getLastName());
+                    newStudent.setEmail(studentDto.getEmail());
+
+                    Department department = departmentRepository.findById(studentDto.getDepartmentCode()).orElseThrow(
+                            () -> new DepartmentNotFoundException(studentDto.getDepartmentCode())
+                    );
+                    newStudent.setDepartment(department);
                     return repository.save(newStudent);
                 });
     }

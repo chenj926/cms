@@ -1,7 +1,9 @@
 package com.example.cms;
 
 import com.example.cms.controller.exceptions.StudentNotFoundException;
+import com.example.cms.model.entity.Department;
 import com.example.cms.model.entity.Student;
+import com.example.cms.model.repository.DepartmentRepository;
 import com.example.cms.model.repository.StudentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,6 +39,10 @@ class StudentTests {
 	@Autowired
 	private StudentRepository studentRepository;
 
+	// adding repo for creating department
+	@Autowired
+	private DepartmentRepository departmentRepository;
+
 	@Test
 	void getStudent() throws Exception{
 		MockHttpServletResponse response = mockMvc.perform(get("/students/1111"))
@@ -47,17 +53,22 @@ class StudentTests {
 		ObjectNode receivedJson = objectMapper.readValue(response.getContentAsString(), ObjectNode.class);
 		assertEquals(1111L, receivedJson.get("id").longValue());
 		assertEquals("Tyrion", receivedJson.get("firstName").textValue());
-		assertEquals("Lannister", receivedJson.get("lastName").textValue());
+		assertEquals("Other", receivedJson.get("lastName").textValue());
 	}
 
 	@Test
 	void addStudent() throws Exception{
+		// create new department
+		Department newDepartment = new Department("CS", "CompSci", "jane@cs.utoronto.edu");
+		this.departmentRepository.save(newDepartment);
 
 		ObjectNode studentJson = objectMapper.createObjectNode();
 		studentJson.put("id", 8888L);
 		studentJson.put("firstName", "first");
 		studentJson.put("lastName", "last");
 		studentJson.put("email", "first@last.com");
+		studentJson.put("departmentCode", newDepartment.getCode());
+
 
 		MockHttpServletResponse response = mockMvc.perform(
 				post("/students").
@@ -77,6 +88,7 @@ class StudentTests {
 		assertEquals("first", addedStudent.getFirstName());
 		assertEquals("last", addedStudent.getLastName());
 		assertEquals("first@last.com", addedStudent.getEmail());
+		assertEquals(newDepartment.getCode(), addedStudent.getDepartment().getCode());
 	}
 
 	@Test

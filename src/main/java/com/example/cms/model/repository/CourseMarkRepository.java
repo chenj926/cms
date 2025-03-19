@@ -15,9 +15,8 @@ public interface CourseMarkRepository extends JpaRepository<CourseMark, CourseMa
     @Modifying
     @Transactional
     @Query(value = "UPDATE marks " +
-                    "SET mark = mark + 5 " +
-                    "WHERE courseCode = :code " +
-                    "AND mark <= 95",
+                    "SET mark = LEAST(mark+5, 100) " +
+                    "WHERE courseCode = :code ",
             nativeQuery = true)
     void increaseFive(@Param("code") String code);
 
